@@ -743,6 +743,19 @@ void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble
 
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
+    uint8_t data_1[] = {
+        0x55, 0xAA, 0xFF, 0xFF, 0x05, 0x13, 0x01, 0x11, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    uint8_t data_2[] = {
+        0x8E, 0x03, 0xA1, 0x03, 0xA4, 0x03, 0x8F, 0x03, 0x7F, 0x03, 0x8D, 0x03, 0xAC, 0x03, 0xB4, 0x03, 0x9D, 0x03, 0x89, 0x03
+    };
+    uint8_t data_3[] = {
+        0x8F, 0x03, 0x9A, 0x03, 0xA3, 0x03, 0xA0, 0x03, 0x95, 0x03, 0x8E, 0x03, 0x94, 0x03, 0x9F, 0x03, 0xA2, 0x03, 0x98, 0x03
+    };
+    uint8_t data_4[] = {
+        0x93, 0x03, 0x90, 0x03, 0x9A, 0x03, 0xA5, 0x03, 0xA3, 0x03, 0x97, 0x03, 0x91, 0x03, 0x99, 0x03, 0xAA, 0x03, 0xB0, 0x03
+    };
+
     switch (event) {
         case ESP_GATTS_REG_EVT:{
             esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(SAMPLE_DEVICE_NAME);
@@ -797,9 +810,17 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                 ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
                 esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
                 
-                if(memcmp(key_send_data_1, param->write.value, 15) == 0 ||
-                   memcmp(key_send_data_2, param->write.value, 14) == 0 ){
+                if(memcmp(key_send_data_1, param->write.value, 15) == 0){
                     prepare_send = 1;
+                    //the size of notify_data[] need less than MTU size
+                    esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, 
+                        heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(data_1), data_1, false);
+                    esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, 
+                        heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(data_2), data_2, false);
+                    esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, 
+                        heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(data_3), data_3, false);
+                    esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, 
+                        heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(data_4), data_4, false);    
                 }
                 
                 if (heart_rate_handle_table_2[IDX_CHAR_CFG_A_2] == param->write.handle && param->write.len == 2){
@@ -809,18 +830,6 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                         notify_data = 1;
                         conn_id_noti = param->write.conn_id;
                         gatts_if_noti = gatts_if;
-                        if(memcmp(key_send_data_1, param->write.value, 15) == 0 ||
-                            memcmp(key_send_data_2, param->write.value, 14) == 0 ){
-                            uint8_t notify_data[20];
-                            for (int i = 0; i < sizeof(notify_data); ++i)
-                            {
-                                notify_data[i] = i % 0xff;
-                                esp_log_buffer_hex(GATTS_TABLE_TAG, notify_data, sizeof(notify_data));
-                                //the size of notify_data[] need less than MTU size
-                                esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2],
-                                                    sizeof(notify_data), notify_data, false);
-                            }
-                        }
                         // uint8_t notify_data[20];
                         // for (int i = 0; i < sizeof(notify_data); ++i)
                         // {
