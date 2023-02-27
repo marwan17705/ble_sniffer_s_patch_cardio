@@ -80,10 +80,12 @@ static uint8_t raw_adv_data[] = {
         0x42, 0xCC, 0x9A, 
         0x13, 0x25, 0x00, 
         0x9B, 0xED, 0xC6, 
-        0x5E, 0x53, 0x48, 0xAF, 0x22, 0xC5, 0x09,
+        0x5E, 0x53, 0x48, 0x08, 0x25, 0xC5, 0x09,
 };
 static uint8_t raw_scan_rsp_data[] = {
-    0x09, 0x53, 0x2D, 0x50, 0x41, 0x54, 0x43, 0x48, 0x33, 0x13, 0x16, 0x0A, 0x18, 0x09, 0xC5, 0xFF, 0x5C, 0x6A, 0x00, 0xAA, 0x00, 0x34, 0x12, 0xBC, 0x9A, 0x78, 0x01, 0x00, 0x00
+    0x09, 0x53, 0x2D, 0x50, 0x41, 0x54, 0x43, 0x48, 0x33, 0x13, 
+    0x16, 0x0A, 0x18, 0x09, 0xC5, 0xFF, 0x5C, 0x6A, 0x00, 0xAA, 
+    0x00, 0x34, 0x12, 0xBC, 0x9A, 0x78, 0x01, 0x00, 0x00
 };
 
 #else
@@ -405,12 +407,12 @@ static const esp_gatts_attr_db_t gatt_db_B[HRS_IDX_NB_2] = {
 
     /* Characteristic Declaration */
     [IDX_CHAR_A_2]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_NOTIFY | ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_notify }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_A_2] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_A_2, ESP_GATT_CHAR_PROP_BIT_NOTIFY | ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_A_2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Client Characteristic Configuration Descriptor Declaration */
@@ -435,22 +437,22 @@ static const esp_gatts_attr_db_t gatt_db_B[HRS_IDX_NB_2] = {
 
     /* Characteristic Declaration */
     [IDX_CHAR_B_2]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_write_nr}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_B_2]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_B_2, ESP_GATT_PERM_WRITE,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_B_2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Client Characteristic Configuration Descriptor Declaration */
     [IDX_CHAR_CFG_B_2]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
 
     /* Client Characteristic Configuration Descriptor Value */ 
     [IDX_CHAR_CFG_VAL_B_2] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&client_descrip_2, ESP_GATT_PERM_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&client_descrip_2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Characteristic User Configuration Descriptor Declaration */
@@ -465,12 +467,12 @@ static const esp_gatts_attr_db_t gatt_db_B[HRS_IDX_NB_2] = {
 
     /* Characteristic Declaration */
     [IDX_CHAR_C_2]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_nr_notify}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_C_2]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_C_2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_C_2, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
     
     /* Client Characteristic Configuration Descriptor Declaration */
@@ -503,72 +505,72 @@ static const esp_gatts_attr_db_t gatt_db_C[HRS_IDX_NB_3] = {
 
     /* Characteristic Declaration */
     [IDX_CHAR_A_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_A_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_A_3, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_A_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_B_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_B_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_B_3, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_B_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_C_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_C_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_C_3, ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_C_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
     
     /* Characteristic Declaration */
     [IDX_CHAR_D_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_D_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_D_3, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_D_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_E_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_write_nr}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_E_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_E_3, ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_E_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 
     /* Characteristic Declaration */
     [IDX_CHAR_F_3]     =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_notify }},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_F_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_F_3, ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_128, (uint8_t *)&GATTS_CHAR_UUID_TEST_F_3, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(VALUE_F_3), (uint8_t *)VALUE_F_3}},
 
     /* Client Characteristic Configuration Descriptor Declaration */
     [IDX_CHAR_CFG_F_3]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
 
     /* Client Characteristic Configuration Descriptor Value */ 
     [IDX_CHAR_CFG_VAL_F_3] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&client_descript_F, ESP_GATT_PERM_READ,
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&client_descript_F, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value_A_2), (uint8_t *)char_value_A_2}},
 };
 
@@ -777,25 +779,28 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                             0x00, 0x31, 0x02, 0x00, 0x53, 0x33, 0x44, 0x99, 0xEE, 0xEE
                         };
 
-                        // int seg = 0;
-                        // uint8_t noti_data[20];
-                        // if (sizeof(data)%20 == 0){
-                        //     seg = sizeof(data)/20;
-                        // }
-                        // else{
-                        //     seg = (sizeof(data)/20) + 1;
-                        // }
+                        esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(initial_header), initial_header, false);
+
+                        int seg = 0;
+                        uint8_t noti_data[20];
+                        if (sizeof(initial_data)%20 == 0){
+                            seg = sizeof(initial_data)/20;
+                        }
+                        else{
+                            seg = (sizeof(initial_data)/20) + 1;
+                        }
                         
-                        // for(int i=0; i<seg; i++){
-                        //     if (i == seg-1){
-                        //         memcpy(noti_data, &data[i*20], (sizeof(data))-(i*20));
-                        //     }
-                        //     else {
-                        //         memcpy(noti_data, &data[i*20], 20);
-                        //     }
-                        //     esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
-                        //     memset(noti_data, ' ', 20);
-                        // }
+                        for(int i=0; i<seg; i++){
+                            if (i == seg-1){
+                                memcpy(noti_data, &initial_data[i*20], (sizeof(initial_data))-(i*20));
+                            }
+                            else {
+                                memcpy(noti_data, &initial_data[i*20], 20);
+                            }
+                            esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
+                            memset(noti_data, ' ', 20);
+                        }
+                        esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(tailer_data), tailer_data, false);
                         notify_data = 1;
 
                     } else if (descr_value == 0x0002){
@@ -848,9 +853,9 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
             /* For the iOS system, please refer to Apple official documents about the BLE connection parameters restrictions. */
             conn_params.latency = 0;
-            conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
-            conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
-            conn_params.timeout = 400;     // timeout = 400*10ms = 4000ms
+            conn_params.max_int = 0x10;    // max_int = 0x20*1.25ms = 40ms
+            conn_params.min_int = 0x08;    // min_int = 0x10*1.25ms = 20ms -> 0001 0000
+            conn_params.timeout = 10;     // timeout = 400*10ms = 4000ms
             //start sent the update connection parameters to the peer device.
             esp_ble_gap_update_conn_params(&conn_params);
             break;
