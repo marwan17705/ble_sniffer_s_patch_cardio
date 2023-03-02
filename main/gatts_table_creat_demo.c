@@ -271,37 +271,44 @@ static uint8_t key_send_data_2[] = {
 
 void send_data_task(void *pvParameters){
     
-    bool start = true;
-    uint16_t len;
-    const uint8_t *rx_data;
     int seg = 0;
+    int seq_send = 2;
     uint8_t noti_data[20];
-    while (start){
+    uint8_t header_data[] = { 0x55, 0xAA, 0xFF, 0xFF, 0x05, 0x13, 0x01, 0x11, 0x00, 0x01 };
+    uint8_t data[] = { 0xAD, 0x03, 0xAF, 0x03, 0xA9, 0x03, 0xA2, 0x03, 0xA3, 0x03, 
+                        0xAC, 0x03, 0xB0, 0x03, 0xA7, 0x03, 0x9D, 0x03, 0xA3, 0x03,
+                        0xAC, 0x03, 0xB0, 0x03, 0xA7, 0x03, 0x9D, 0x03, 0xA3, 0x03 };
+    uint8_t tailer_data[] = { 0x22, 0x01, 0x00, 0x01, 0x23, 0x04, 0xFF, 0xFF, 0x00, 0x00, 
+                              0x00, 0x31, 0x02, 0x00, 0x53, 0x33, 0x44, 0x99, 0xEE, 0xEE };
+                                /* seq change at tailer_data[6,7] */
+    uint8_t data_send[60];
+    while (true){
         if (prepare_send == 1 && notify_data == 1){
-            // esp_err_t err = esp_ble_gatts_set_attr_value(heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(data), data);
-            // if (err != ESP_OK){
-            //     ESP_LOGE(GATTS_TABLE_TAG, "Set Value Error");
-            // }
-            // esp_gatt_status_t a = esp_ble_gatts_get_attr_value(heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], &len, &rx_data);
-            // esp_log_buffer_hex(GATTS_TABLE_TAG, rx_data, len);
-            // if (sizeof(data)%20 == 0){
-            //     seg = sizeof(data)/20;
-            // }
-            // else{
-            //     seg = (sizeof(data)/20) + 1;
-            // }
+            tailer_data[6] = (seq_send & 0xFF00) >> 8;
+            tailer_data[7] = seq_send & 0x00FF;
+            memcpy( data_send, header_data, sizeof(header_data));
+            memcpy( &data_send[sizeof(header_data)], data, sizeof(data));
+            memcpy( &data_send[sizeof(header_data)+sizeof(data)], tailer_data, sizeof(tailer_data));
+
+            if (sizeof(data_send)%20 == 0){
+                seg = sizeof(data_send)/20;
+            }
+            else{
+                seg = (sizeof(data_send)/20) + 1;
+            }
             
-            // for(int i=0; i<seg; i++){
-            //     if (i == seg-1){
-            //         memcpy(noti_data, &data[i*20], (sizeof(data))-(i*20));
-            //     }
-            //     else {
-            //         memcpy(noti_data, &data[i*20], 20);
-            //     }
-            //     esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
-            //     memset(noti_data, ' ', 20);
-            //     vTaskDelay(1);
-            // }
+            for(int i=0; i<seg; i++){
+                if (i == seg-1){
+                    memcpy(noti_data, &data_send[i*20], (sizeof(data_send))-(i*20));
+                }
+                else {
+                    memcpy(noti_data, &data_send[i*20], 20);
+                }
+                esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
+                memset(noti_data, ' ', 20);
+            }
+            memset(data_send, ' ', 60);
+            seq_send++;
         }
         vTaskDelay(1);
     }
@@ -725,90 +732,86 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
             esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
             
-            // if (!param->write.is_prep){
-            //     // the data length of gattc write  must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
-            //     // ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, conn_id = %d", param->write.conn_id);
-            //     // esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.bda, sizeof(param->write.bda));
+            if (!param->write.is_prep){
+                
+                if(memcmp(key_send_data_1, param->write.value, 15) == 0){
+                    prepare_send = 1;
+                    conn_id_noti = param->write.conn_id;
+                    gatts_if_noti = gatts_if;
+                }
 
-            //     if(memcmp(key_send_data_1, param->write.value, 15) == 0){
-            //         prepare_send = 1;
-            //         conn_id_noti = param->write.conn_id;
-            //         gatts_if_noti = gatts_if;
-            //     }
-            
-            //     if (heart_rate_handle_table_2[IDX_CHAR_CFG_A_2] == param->write.handle && param->write.len == 2){
-            //         uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
-            //         if (descr_value == 0x0001){
-            //             ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
-            //             uint8_t initial_header[] = {
-            //                 0x55, 0xAA, 0xFF, 0xFF, 0x05, 0x13, 0x01, 0x11, 0x00, 0x01, 
-            //                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-            //             };
-            //             uint8_t initial_data[] = {
-            //                 0xAD, 0x03, 0xAF, 0x03, 0xA9, 0x03, 0xA2, 0x03, 0xA3, 0x03, 
-            //                 0xAC, 0x03, 0xB0, 0x03, 0xA7, 0x03, 0x9D, 0x03, 0xA3, 0x03,
-            //                 0xAE, 0x03, 0xA9, 0x03, 0xA0, 0x03, 0x9F, 0x03, 0xA8, 0x03, 
-            //                 0xAD, 0x03, 0xAA, 0x03, 0xA5, 0x03, 0xA5, 0x03, 0xA9, 0x03,
-            //                 0xA8, 0x03, 0xAA, 0x03, 0xA9, 0x03, 0xA6, 0x03, 0xA2, 0x03, 
-            //                 0xA2, 0x03, 0xA5, 0x03, 0xA6, 0x03, 0xA3, 0x03, 0xA2, 0x03
-            //             };
-            //             uint8_t tailer_data[] = {
-            //                 0x22, 0x01, 0x00, 0x01, 0x23, 0x04, 0x00, 0x06, 0x00, 0x00, 
-            //                 0x00, 0x31, 0x02, 0x00, 0x53, 0x33, 0x44, 0x99, 0xEE, 0xEE
-            //             };
+                if(memcmp(key_send_data_2, param->write.value, 14) == 0){
+                    prepare_send = 0;
+                }
+        
+                if (heart_rate_handle_table_2[IDX_CHAR_CFG_A_2] == param->write.handle && param->write.len == 2){
+                    uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
+                    if (descr_value == 0x0001){
+                        ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
+                        uint8_t initial_header[] = {
+                            0x55, 0xAA, 0xFF, 0xFF, 0x05, 0x13, 0x01, 0x11, 0x00, 0x01, 
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                        };
+                        uint8_t initial_data[] = {
+                            0xAD, 0x03, 0xAF, 0x03, 0xA9, 0x03, 0xA2, 0x03, 0xA3, 0x03, 
+                            0xAC, 0x03, 0xB0, 0x03, 0xA7, 0x03, 0x9D, 0x03, 0xA3, 0x03,
+                        };
+                        uint8_t tailer_data[] = {
+                            0x22, 0x01, 0x00, 0x01, 0x23, 0x04, 0x00, 0x01, 0x00, 0x00, 
+                            0x00, 0x31, 0x02, 0x00, 0x53, 0x33, 0x44, 0x99, 0xEE, 0xEE
+                        };
 
-            //             esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(initial_header), initial_header, false);
-
-            //             int seg = 0;
-            //             uint8_t noti_data[20];
-            //             if (sizeof(initial_data)%20 == 0){
-            //                 seg = sizeof(initial_data)/20;
-            //             }
-            //             else{
-            //                 seg = (sizeof(initial_data)/20) + 1;
-            //             }
+                        esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(initial_header), initial_header, false);
+                        int seg = 0;
+                        uint8_t noti_data[20];
+                        if (sizeof(initial_data)%20 == 0){
+                            seg = sizeof(initial_data)/20;
+                        }
+                        else{
+                            seg = (sizeof(initial_data)/20) + 1;
+                        }
                         
-            //             for(int i=0; i<seg; i++){
-            //                 if (i == seg-1){
-            //                     memcpy(noti_data, &initial_data[i*20], (sizeof(initial_data))-(i*20));
-            //                 }
-            //                 else {
-            //                     memcpy(noti_data, &initial_data[i*20], 20);
-            //                 }
-            //                 esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
-            //                 memset(noti_data, ' ', 20);
-            //             }
-            //             esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(tailer_data), tailer_data, false);
-            //             notify_data = 1;
+                        for(int i=0; i<seg; i++){
+                            if (i == seg-1){
+                                memcpy(noti_data, &initial_data[i*20], (sizeof(initial_data))-(i*20));
+                            }
+                            else {
+                                memcpy(noti_data, &initial_data[i*20], 20);
+                            }
+                            esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(noti_data), noti_data, false);
+                            memset(noti_data, ' ', 20);
+                        }
+                        esp_ble_gatts_send_indicate(gatts_if_noti, conn_id_noti, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2], sizeof(tailer_data), tailer_data, false);
+                        vTaskDelay(1);
+                        notify_data = 1;
 
-            //         } else if (descr_value == 0x0002){
-            //             ESP_LOGI(GATTS_TABLE_TAG, "indicate enable");
-            //             uint8_t indicate_data[15];
-            //             for (int i = 0; i < sizeof(indicate_data); ++i)
-            //             {
-            //                 indicate_data[i] = i % 0xff;
-            //             }
-            //             //the size of indicate_data[] need less than MTU size
-            //             esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2],
-            //                                 sizeof(indicate_data), indicate_data, true);
-            //         }
-            //         else if (descr_value == 0x0000){
-            //             ESP_LOGI(GATTS_TABLE_TAG, "notify/indicate disable ");
-            //             notify_data = 0;
-            //             prepare_send = 0;
-            //         } else {
-            //             ESP_LOGE(GATTS_TABLE_TAG, "unknown descr value");
-            //             esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
-            //         }
-            //     }
-            //     /* send response when param->write.need_rsp is true */
-            //     if (param->write.need_rsp){
-            //         esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
-            //     }
-            // } else {
-            //     /* handle prepare write */
-            //     example_prepare_write_event_env(gatts_if, &prepare_write_env, param);
-            // }
+                    } else if (descr_value == 0x0002){
+                        ESP_LOGI(GATTS_TABLE_TAG, "indicate enable");
+                        uint8_t indicate_data[15];
+                        for (int i = 0; i < sizeof(indicate_data); ++i)
+                        {
+                            indicate_data[i] = i % 0xff;
+                        }
+                        //the size of indicate_data[] need less than MTU size
+                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, heart_rate_handle_table_2[IDX_CHAR_VAL_A_2],
+                                            sizeof(indicate_data), indicate_data, true);
+                    }
+                    else if (descr_value == 0x0000){
+                        ESP_LOGI(GATTS_TABLE_TAG, "notify/indicate disable ");
+                        notify_data = 0;
+                    } else {
+                        ESP_LOGE(GATTS_TABLE_TAG, "unknown descr value");
+                        esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
+                    }
+                }
+                /* send response when param->write.need_rsp is true */
+                if (param->write.need_rsp){
+                    esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
+                }
+            } else {
+                /* handle prepare write */
+                example_prepare_write_event_env(gatts_if, &prepare_write_env, param);
+            }
       	    break;
         case ESP_GATTS_EXEC_WRITE_EVT:
             // the length of gattc prepare write data must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
@@ -831,9 +834,9 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
             /* For the iOS system, please refer to Apple official documents about the BLE connection parameters restrictions. */
             conn_params.latency = 0;
-            conn_params.max_int = 0x10;    // max_int = 0x20*1.25ms = 40ms
-            conn_params.min_int = 0x08;    // min_int = 0x10*1.25ms = 20ms -> 0001 0000
-            conn_params.timeout = 10;     // timeout = 400*10ms = 4000ms
+            conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
+            conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms -> 0001 0000
+            conn_params.timeout = 400;     // timeout = 400*10ms = 4000ms
             //start sent the update connection parameters to the peer device.
             esp_ble_gap_update_conn_params(&conn_params);
             break;
@@ -879,7 +882,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         case ESP_GATTS_UNREG_EVT:
         case ESP_GATTS_DELETE_EVT:
         default:
-            printf("event number: %d\n", event);
+            ESP_LOGI(GATTS_TABLE_TAG, "event number: %d\n", event);
             break;
     }
 }
@@ -972,4 +975,6 @@ void app_main(void)
     if (local_mtu_ret){
         ESP_LOGE(GATTS_TABLE_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
+
+    ble_comm_p2p_start();
 }
